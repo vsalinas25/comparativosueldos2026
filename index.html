@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salarios de Gerentes · Sector Restaurantero CDMX 2025–2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ─── RESET & TOKENS ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy:    #0F1F38;
+  --navy2:   #1A2B4A;
+  --navy3:   #243554;
+  --red:     #DC2626;
+  --red-lt:  #FEF2F2;
+  --red-mid: #FCA5A5;
+  --grn:     #0D7A5F;
+  --grn-lt:  #ECFDF5;
+  --grn-mid: #6EE7B7;
+  --gold:    #D97706;
+  --gold-lt: #FFFBEB;
+  --slate:   #64748B;
+  --slate2:  #94A3B8;
+  --bg:      #F1F5F9;
+  --bg2:     #E8EEF5;
+  --card:    #FFFFFF;
+  --border:  #E2E8F0;
+  --text:    #0F172A;
+  --text2:   #475569;
+  --text3:   #94A3B8;
+  --sidebar: 260px;
+  --radius:  10px;
+  --shadow:  0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg: 0 4px 6px rgba(0,0,0,.07), 0 10px 30px rgba(0,0,0,.1);
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+  background: var(--bg); color: var(--text); display: flex; min-height: 100vh;
+  font-size: 15px; line-height: 1.6; }
+
+/* ─── SIDEBAR ────────────────────────────────────────────────── */
+#sidebar {
+  width: var(--sidebar); flex-shrink: 0;
+  background: var(--navy); color: #fff;
+  position: fixed; top: 0; left: 0; height: 100vh;
+  display: flex; flex-direction: column;
+  overflow-y: auto; z-index: 200;
+  transition: transform .3s;
+}
+.sidebar-brand {
+  padding: 1.5rem 1.25rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+.sidebar-brand .logo {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--slate2); margin-bottom: .4rem;
+}
+.sidebar-brand h2 { font-size: 1rem; font-weight: 700; line-height: 1.3; color: #fff; }
+.sidebar-brand p { font-size: 0.72rem; color: var(--slate2); margin-top: .25rem; }
+
+.nav-group { padding: .75rem 0; border-bottom: 1px solid rgba(255,255,255,.07); }
+.nav-group-label {
+  font-size: 0.65rem; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--slate2);
+  padding: .5rem 1.25rem .25rem;
+}
+.nav-link {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .55rem 1.25rem; text-decoration: none;
+  font-size: .82rem; font-weight: 500; color: rgba(255,255,255,.65);
+  border-left: 2px solid transparent; transition: all .15s;
+}
+.nav-link:hover { color: #fff; background: rgba(255,255,255,.07); }
+.nav-link.active { color: #fff; border-left-color: currentColor; background: rgba(255,255,255,.08); }
+.nav-link.ff.active  { color: #F87171; border-left-color: #F87171; }
+.nav-link.cd.active  { color: #34D399; border-left-color: #34D399; }
+.nav-link .dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+}
+.dot-ff { background: #F87171; }
+.dot-cd { background: #34D399; }
+.dot-cmp { background: #A78BFA; }
+
+.sidebar-footer {
+  margin-top: auto; padding: 1rem 1.25rem;
+  font-size: 0.7rem; color: var(--slate2);
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+/* ─── MAIN ───────────────────────────────────────────────────── */
+#main { margin-left: var(--sidebar); flex: 1; min-width: 0; }
+
+/* ─── TOPBAR (mobile) ────────────────────────────────────────── */
+#topbar {
+  display: none; background: var(--navy);
+  padding: .75rem 1rem; align-items: center;
+  justify-content: space-between; position: sticky;
+  top: 0; z-index: 150;
+}
+#topbar h3 { color: #fff; font-size: .9rem; }
+#menu-btn { background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; }
+
+/* ─── HERO ───────────────────────────────────────────────────── */
+.hero {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy3) 100%);
+  padding: 3rem 2.5rem 2.5rem;
+  position: relative; overflow: hidden;
+}
+.hero::after {
+  content: '';
+  position: absolute; right: -60px; top: -60px;
+  width: 320px; height: 320px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,.04) 0%, transparent 70%);
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: rgba(255,255,255,.1); color: rgba(255,255,255,.85);
+  font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; padding: .3rem .75rem;
+  border-radius: 99px; border: 1px solid rgba(255,255,255,.15);
+  margin-bottom: 1.25rem;
+}
+.hero h1 { font-size: 2.2rem; font-weight: 800; color: #fff; line-height: 1.15; margin-bottom: .6rem; }
+.hero .sub { color: rgba(255,255,255,.6); font-size: .9rem; margin-bottom: 2rem; max-width: 600px; }
+
+.hero-kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; }
+.kpi-card {
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+  border-radius: var(--radius); padding: 1.1rem 1.2rem; backdrop-filter: blur(4px);
+}
+.kpi-card .kpi-label { font-size: .7rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: rgba(255,255,255,.55); margin-bottom: .4rem; }
+.kpi-card .kpi-val { font-size: 1.65rem; font-weight: 800; color: #fff; line-height: 1; }
+.kpi-card .kpi-sub { font-size: .72rem; color: rgba(255,255,255,.45); margin-top: .3rem; }
+.kpi-card.ff .kpi-val { color: #FCA5A5; }
+.kpi-card.cd .kpi-val { color: #6EE7B7; }
+.kpi-card.cmp .kpi-val { color: #C4B5FD; }
+
+/* ─── SECTION SCAFFOLD ───────────────────────────────────────── */
+.section { padding: 2.5rem 2.5rem; }
+.section + .section { border-top: 1px solid var(--border); }
+.section-header { display: flex; align-items: baseline; gap: .85rem; margin-bottom: 1.75rem; }
+.section-badge {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; padding: .28rem .7rem;
+  border-radius: 99px; flex-shrink: 0;
+}
+.badge-ff  { background: var(--red-lt);  color: var(--red); }
+.badge-cd  { background: var(--grn-lt);  color: var(--grn); }
+.badge-cmp { background: #EDE9FE; color: #7C3AED; }
+.badge-meta{ background: var(--bg2); color: var(--slate); }
+h2.section-title { font-size: 1.35rem; font-weight: 700; color: var(--text); }
+h2.section-title span { color: var(--slate); font-weight: 400; font-size: .95rem; }
+.section-desc { color: var(--text2); font-size: .88rem; line-height: 1.6; max-width: 700px; margin-bottom: 1.5rem; margin-top: -.5rem; }
+
+/* ─── SEGMENT PILL TABS ──────────────────────────────────────── */
+.seg-tabs { display: flex; gap: .5rem; margin-bottom: 1.5rem; }
+.seg-tab {
+  padding: .45rem 1rem; border-radius: 99px; font-size: .8rem;
+  font-weight: 600; cursor: pointer; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--slate); transition: all .15s;
+}
+.seg-tab.active-ff { background: var(--red); color: #fff; border-color: var(--red); }
+.seg-tab.active-cd { background: var(--grn); color: #fff; border-color: var(--grn); }
+.seg-panel { display: none; }
+.seg-panel.visible { display: block; }
+
+/* ─── CARDS GRID ─────────────────────────────────────────────── */
+.cards-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 1.5rem; }
+.cards-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 1rem; margin-bottom: 1.5rem; }
+.cards-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 1.5rem; }
+
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem 1.4rem;
+  box-shadow: var(--shadow); position: relative; overflow: hidden;
+}
+.stat-card .accent-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.stat-card .sc-label { font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: .3rem; }
+.stat-card .sc-val { font-size: 1.8rem; font-weight: 800; color: var(--text); line-height: 1; }
+.stat-card .sc-sub { font-size: .78rem; color: var(--text2); margin-top: .4rem; line-height: 1.4; }
+.stat-card.min .sc-val  { color: var(--navy2); }
+.stat-card.avg .sc-val  { color: var(--red); }
+.stat-card.avg-cd .sc-val { color: var(--grn); }
+.stat-card.max .sc-val  { color: var(--navy2); }
+
+/* ─── TABLES ─────────────────────────────────────────────────── */
+.table-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow); margin-bottom: 1rem;
+}
+.table-card-header {
+  padding: .9rem 1.25rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.table-card-header h3 { font-size: .88rem; font-weight: 700; color: var(--text); }
+.table-card-header p { font-size: .78rem; color: var(--text3); }
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+thead th {
+  background: var(--navy); color: rgba(255,255,255,.85);
+  padding: .7rem 1rem; text-align: left; font-size: .72rem;
+  font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  white-space: nowrap;
+}
+tbody td { padding: .7rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #F8FAFF; }
+.td-val { font-weight: 700; color: var(--navy2); font-size: .9rem; }
+.td-muted { color: var(--text3); font-style: italic; }
+.pill {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .2rem .55rem; border-radius: 99px;
+  font-size: .68rem; font-weight: 700;
+}
+.pill-warn   { background: #FEF3C7; color: #92400E; }
+.pill-danger { background: #FEE2E2; color: #991B1B; }
+.pill-ok     { background: #D1FAE5; color: #065F46; }
+.pill-neu    { background: var(--bg2); color: var(--slate); }
+.pill-gap    { background: #EDE9FE; color: #6D28D9; }
+
+.footnote-list { padding: .75rem 1.25rem; background: var(--bg); border-top: 1px solid var(--border); }
+.footnote-list p { font-size: .74rem; color: var(--text3); line-height: 1.5; }
+.footnote-list p + p { margin-top: .25rem; }
+.fn-red { color: #B91C1C; }
+
+/* ─── CHART CARD ─────────────────────────────────────────────── */
+.chart-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem;
+  box-shadow: var(--shadow); margin-bottom: 1.5rem;
+}
+.chart-card h3 { font-size: .88rem; font-weight: 700; color: var(--text); margin-bottom: 1.25rem; }
+.chart-card canvas { max-height: 340px; }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: .9rem; }
+.chart-legend span { display: flex; align-items: center; gap: .35rem; font-size: .78rem; color: var(--text2); }
+.chart-legend .dot { width: 10px; height: 10px; border-radius: 2px; }
+
+/* ─── COMPARISON ─────────────────────────────────────────────── */
+.cmp-hero {
+  background: linear-gradient(135deg, #1A2B4A 0%, #243554 100%);
+  border-radius: var(--radius); padding: 2rem;
+  display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem;
+  align-items: center; margin-bottom: 1.5rem; box-shadow: var(--shadow-lg);
+}
+.cmp-side { }
+.cmp-side .brand-tag {
+  display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; padding: .25rem .65rem; border-radius: 99px; margin-bottom: .75rem;
+}
+.cmp-side.ff .brand-tag { background: rgba(220,38,38,.25); color: #FCA5A5; }
+.cmp-side.cd .brand-tag { background: rgba(13,122,95,.25); color: #6EE7B7; }
+.cmp-side h3 { font-size: .88rem; font-weight: 600; color: rgba(255,255,255,.6); margin-bottom: .25rem; }
+.cmp-side .big { font-size: 2rem; font-weight: 800; color: #fff; line-height: 1; margin-bottom: .5rem; }
+.cmp-side.ff .big { color: #FCA5A5; }
+.cmp-side.cd .big { color: #6EE7B7; }
+.cmp-row { display: flex; justify-content: space-between; align-items: center; padding: .35rem 0; border-bottom: 1px solid rgba(255,255,255,.07); }
+.cmp-row:last-child { border-bottom: none; }
+.cmp-row .ck { font-size: .78rem; color: rgba(255,255,255,.5); }
+.cmp-row .cv { font-size: .8rem; font-weight: 600; color: rgba(255,255,255,.85); }
+.cmp-mid {
+  text-align: center; padding: 0 .75rem;
+}
+.cmp-mid .gap-badge {
+  background: #7C3AED; color: #fff;
+  display: inline-flex; flex-direction: column; align-items: center;
+  padding: .75rem 1rem; border-radius: var(--radius);
+  font-weight: 800;
+}
+.cmp-mid .gap-badge .pct { font-size: 1.6rem; line-height: 1; }
+.cmp-mid .gap-badge .lbl { font-size: .65rem; letter-spacing: .08em; text-transform: uppercase; opacity: .8; margin-top: .2rem; }
+.cmp-mid p { font-size: .72rem; color: rgba(255,255,255,.4); margin-top: .6rem; text-align: center; line-height: 1.4; }
+
+.diff-table {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden; box-shadow: var(--shadow);
+}
+.diff-table .dt-header {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr;
+  background: var(--navy); padding: .65rem 1.25rem;
+}
+.diff-table .dt-header span { font-size: .72rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: rgba(255,255,255,.7); }
+.diff-table .dt-row {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr;
+  padding: .75rem 1.25rem; border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+.diff-table .dt-row:last-child { border-bottom: none; }
+.diff-table .dt-row:nth-child(even) { background: var(--bg); }
+.diff-table .dt-row:hover { background: #EFF6FF; }
+.dt-dim { font-size: .84rem; font-weight: 600; color: var(--text); }
+.dt-ff  { font-size: .84rem; color: var(--red); font-weight: 600; }
+.dt-cd  { font-size: .84rem; color: var(--grn); font-weight: 600; }
+
+/* ─── QUALITY ────────────────────────────────────────────────── */
+.quality-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+.qc {
+  border-radius: 8px; padding: 1rem 1.1rem;
+  display: flex; gap: .75rem; align-items: flex-start;
+  border: 1px solid; transition: transform .15s;
+}
+.qc:hover { transform: translateY(-1px); }
+.qc.ok   { background: #F0FDF4; border-color: #BBF7D0; }
+.qc.no   { background: #FFF5F5; border-color: #FED7D7; }
+.qc.warn { background: #FEFCE8; border-color: #FDE68A; }
+.qc-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+.qc strong { display: block; font-size: .82rem; font-weight: 700; color: var(--text); margin-bottom: .2rem; }
+.qc p { font-size: .78rem; color: var(--text2); line-height: 1.5; }
+
+/* ─── METHODOLOGY ────────────────────────────────────────────── */
+.method-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+.method-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+.method-card .mc-icon { font-size: 1.4rem; margin-bottom: .7rem; }
+.method-card h4 { font-size: .85rem; font-weight: 700; color: var(--text); margin-bottom: .4rem; }
+.method-card p { font-size: .78rem; color: var(--text2); line-height: 1.55; }
+
+/* ─── CONCLUSIONS ────────────────────────────────────────────── */
+.concl-item {
+  display: flex; gap: 1rem; padding: 1.1rem 1.25rem;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: .75rem;
+  box-shadow: var(--shadow);
+}
+.concl-num {
+  flex-shrink: 0; width: 26px; height: 26px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .78rem; font-weight: 800; color: #fff;
+}
+.concl-num.ff { background: var(--red); }
+.concl-num.cd { background: var(--grn); }
+.concl-body h4 { font-size: .88rem; font-weight: 700; color: var(--text); margin-bottom: .25rem; }
+.concl-body p  { font-size: .82rem; color: var(--text2); line-height: 1.55; }
+
+/* ─── FOOTER BANNER ──────────────────────────────────────────── */
+.footer-banner {
+  margin: 0; padding: 1.5rem 2.5rem;
+  background: var(--navy); color: rgba(255,255,255,.5); font-size: .78rem;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .5rem;
+}
+.footer-banner strong { color: rgba(255,255,255,.8); }
+
+/* ─── DIVIDER ────────────────────────────────────────────────── */
+.divider { height: 1px; background: var(--border); margin: .5rem 0; }
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  :root { --sidebar: 0px; }
+  #sidebar { transform: translateX(-260px); width: 260px; }
+  #sidebar.open { transform: translateX(0); }
+  #main { margin-left: 0; }
+  #topbar { display: flex; }
+  .hero-kpis { grid-template-columns: 1fr 1fr; }
+  .cards-3, .cards-4 { grid-template-columns: 1fr 1fr; }
+  .cmp-hero { grid-template-columns: 1fr; }
+  .cmp-mid { display: none; }
+  .method-grid { grid-template-columns: 1fr 1fr; }
+  .quality-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .hero { padding: 1.5rem 1rem; }
+  .section { padding: 1.75rem 1rem; }
+  .hero-kpis, .cards-3, .cards-4, .cards-2 { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 1.6rem; }
+  .diff-table .dt-header, .diff-table .dt-row { grid-template-columns: 1fr 1fr; }
+  .diff-table .dt-header span:last-child,
+  .diff-table .dt-row .dt-cd { display: none; }
+}
+
+/* ─── SCROLL ANIMATION ───────────────────────────────────────── */
+.fade-up { opacity: 0; transform: translateY(14px); transition: opacity .45s ease, transform .45s ease; }
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ─── SIDEBAR ─────────────────────────────────────────────── -->
+<nav id="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo">Análisis Salarial · CDMX</div>
+    <h2>Sector Restaurantero</h2>
+    <p>Gerentes de Unidad · 2025–2026</p>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Resumen</div>
+    <a href="#hero" class="nav-link"><span class="dot" style="background:#A78BFA"></span>Dashboard</a>
+    <a href="#metodologia" class="nav-link"><span class="dot" style="background:#94A3B8"></span>Metodología</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Fast Food</div>
+    <a href="#ff-overview" class="nav-link ff"><span class="dot dot-ff"></span>Panorama</a>
+    <a href="#ff-datos" class="nav-link ff"><span class="dot dot-ff"></span>Datos por marca</a>
+    <a href="#ff-sector" class="nav-link ff"><span class="dot dot-ff"></span>Fuentes sectoriales</a>
+    <a href="#ff-rango" class="nav-link ff"><span class="dot dot-ff"></span>Rango salarial</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Casual Dining</div>
+    <a href="#cd-overview" class="nav-link cd"><span class="dot dot-cd"></span>Panorama</a>
+    <a href="#cd-datos" class="nav-link cd"><span class="dot dot-cd"></span>Datos por cadena</a>
+    <a href="#cd-sector" class="nav-link cd"><span class="dot dot-cd"></span>Fuentes sectoriales</a>
+    <a href="#cd-rango" class="nav-link cd"><span class="dot dot-cd"></span>Rango salarial</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Comparativa</div>
+    <a href="#comparativa" class="nav-link"><span class="dot dot-cmp"></span>FF vs Casual Dining</a>
+    <a href="#conclusiones" class="nav-link"><span class="dot dot-cmp"></span>Conclusiones</a>
+    <a href="#calidad" class="nav-link"><span class="dot" style="background:#94A3B8"></span>Calidad de datos</a>
+  </div>
+
+  <div class="sidebar-footer">
+    Fuentes: Indeed MX · Computrabajo · Glassdoor · INEGI · Infobae · Talent.com<br>
+    Abril 2026
+  </div>
+</nav>
+
+<!-- ─── MAIN ──────────────────────────────────────────────────── -->
+<main id="main">
+
+<!-- Topbar mobile -->
+<div id="topbar">
+  <h3>Salarios · Sector Restaurantero CDMX</h3>
+  <button id="menu-btn" onclick="toggleMenu()">☰</button>
+</div>
+
+<!-- ─── HERO / DASHBOARD ─────────────────────────────────────── -->
+<div class="hero" id="hero">
+  <span class="hero-tag">📊 Análisis Salarial 2025–2026</span>
+  <h1>Salarios de Gerentes · Sector Restaurantero CDMX</h1>
+  <p class="sub">Comparativa de compensación base entre Fast Food y Casual Dining / Cadenas Nacionales. Ciudad de México. Fuentes verificadas abril 2026.</p>
+  <div class="hero-kpis">
+    <div class="kpi-card">
+      <div class="kpi-label">Segmentos analizados</div>
+      <div class="kpi-val">2</div>
+      <div class="kpi-sub">Fast Food + Casual Dining</div>
+    </div>
+    <div class="kpi-card ff">
+      <div class="kpi-label">Promedio Fast Food</div>
+      <div class="kpi-val" data-count="12200">$12,200</div>
+      <div class="kpi-sub">MXN/mes · sueldo base</div>
+    </div>
+    <div class="kpi-card cd">
+      <div class="kpi-label">Promedio Casual Dining</div>
+      <div class="kpi-val" data-count="18900">$18,900</div>
+      <div class="kpi-sub">MXN/mes · sueldo base</div>
+    </div>
+    <div class="kpi-card cmp">
+      <div class="kpi-label">Brecha salarial</div>
+      <div class="kpi-val">+55%</div>
+      <div class="kpi-sub">Al subir de segmento</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── METODOLOGÍA ──────────────────────────────────────────── -->
+<section class="section" id="metodologia">
+  <div class="section-header fade-up">
+    <span class="section-badge badge-meta">Metodología</span>
+    <h2 class="section-title">Fuentes y proceso <span>— cómo se obtuvieron los datos</span></h2>
+  </div>
+  <div class="method-grid fade-up">
+    <div class="method-card">
+      <div class="mc-icon">🔍</div>
+      <h4>Búsqueda en portales</h4>
+      <p>Indeed MX (por empresa y puesto), Computrabajo, Glassdoor MX, Talent.com, Jooble, OCC, Misalario.org y Jobted. Términos en español e inglés, años 2024–2026.</p>
+    </div>
+    <div class="method-card">
+      <div class="mc-icon">🏛️</div>
+      <h4>Fuentes gubernamentales</h4>
+      <p>Data México / INEGI — Encuesta Nacional de Ocupación y Empleo Q1 2025. Categoría: Directores y Gerentes de Restaurantes y Hoteles (114k personas).</p>
+    </div>
+    <div class="method-card">
+      <div class="mc-icon">📰</div>
+      <h4>Prensa y reportes</h4>
+      <p>Infobae MX (jun 2024), El Financiero, Polotab Blog. Se buscaron reportes de Mercer, Aon, WTW y KPMG: <strong>no están disponibles públicamente</strong> para este segmento.</p>
+    </div>
+  </div>
+  <div class="table-card fade-up">
+    <div class="table-card-header">
+      <h3>Resumen de fuentes y su confiabilidad</h3>
+      <p>Evaluación por portal</p>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Fuente</th><th>Tipo de dato</th><th>Muestra</th><th>Confiabilidad para este análisis</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Indeed MX</strong></td><td>Autodeclarado por empleados + ofertas</td><td>Alta (36 meses)</td><td><span class="pill pill-ok">✓ Alta</span></td></tr>
+          <tr><td><strong>Computrabajo MX</strong></td><td>Estimaciones de 4.1M registros</td><td>Muy alta</td><td><span class="pill pill-warn">△ Media — muy amplio</span></td></tr>
+          <tr><td><strong>Data México / INEGI</strong></td><td>Encuesta oficial de ocupación</td><td>Nacional</td><td><span class="pill pill-ok">✓ Alta — metodología sólida</span></td></tr>
+          <tr><td><strong>Talent.com / Jooble</strong></td><td>Agregadores de terceros</td><td>Media</td><td><span class="pill pill-warn">△ Media — estimado</span></td></tr>
+          <tr><td><strong>Glassdoor MX</strong></td><td>Autodeclarado</td><td>Baja para FF</td><td><span class="pill pill-danger">✗ Baja — descartado</span></td></tr>
+          <tr><td><strong>Infobae / prensa</strong></td><td>Notas periodísticas</td><td>Puntual</td><td><span class="pill pill-warn">△ Referencial (+18 meses)</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- ─── FAST FOOD ─────────────────────────────────────────── -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<section class="section" id="ff-overview" style="background:#FFFAFA;">
+  <div class="section-header fade-up">
+    <span class="section-badge badge-ff">🍔 Fast Food</span>
+    <h2 class="section-title">Panorama General <span>— Cadenas de Comida Rápida CDMX</span></h2>
+  </div>
+  <p class="section-desc">Gerente de sucursal / jefe de tienda en cadenas de comida rápida (McDonald's, Burger King, KFC, Domino's). Operación estandarizada, sin P&L directo. Datos: Indeed MX 2024–2025.</p>
+  <div class="cards-4 fade-up">
+    <div class="stat-card"><div class="accent-bar" style="background:var(--red)"></div><div class="sc-label">McDonald's</div><div class="sc-val">$11,247</div><div class="sc-sub">Gerente de sucursal · Indeed MX</div></div>
+    <div class="stat-card"><div class="accent-bar" style="background:var(--red)"></div><div class="sc-label">Burger King</div><div class="sc-val">$11,236</div><div class="sc-sub">Gerente de sucursal · Indeed MX</div></div>
+    <div class="stat-card"><div class="accent-bar" style="background:#B45309)"></div><div class="sc-label">KFC</div><div class="sc-val">$13,423</div><div class="sc-sub">Gerente de sucursal · Indeed MX</div></div>
+    <div class="stat-card"><div class="accent-bar" style="background:var(--red)"></div><div class="sc-label">Domino's Pizza</div><div class="sc-val">$13,018</div><div class="sc-sub">Gerente de tienda · Indeed MX</div></div>
+  </div>
+  <div class="cards-3 fade-up">
+    <div class="stat-card min"><div class="accent-bar" style="background:var(--navy2)"></div><div class="sc-label">Mínimo estimado</div><div class="sc-val">$9,000</div><div class="sc-sub">Cadenas pequeñas / gerentes sin experiencia</div></div>
+    <div class="stat-card avg"><div class="accent-bar" style="background:var(--red)"></div><div class="sc-label">Promedio (sueldo base)</div><div class="sc-val">$12–14K</div><div class="sc-sub">Principales cadenas. Sin componentes variables.</div></div>
+    <div class="stat-card max"><div class="accent-bar" style="background:var(--navy2)"></div><div class="sc-label">Máximo estimado</div><div class="sc-val">$18–20K</div><div class="sc-sub">Cadenas premium + bono anual</div></div>
+  </div>
+</section>
+
+<section class="section" id="ff-datos">
+  <div class="section-header fade-up">
+    <span class="section-badge badge-ff">Fast Food</span>
+    <h2 class="section-title">Datos por marca</h2>
+  </div>
+  <div class="table-card fade-up">
+    <div class="table-card-header">
+      <h3>Salarios reportados por cadena específica</h3>
+      <p>Fuente principal: Indeed MX</p>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Marca</th><th>Puesto</th><th>Sueldo base MXN/mes</th><th>Variables conocidas</th><th>Fuente</th><th>Período</th></tr></thead>
+        <tbody>
+          <tr><td><strong>McDonald's</strong></td><td>Gerente de sucursal</td><td class="td-val">$11,247</td><td>PTU, vales despensa</td><td>Indeed MX</td><td>2024–2025</td></tr>
+          <tr><td><strong>Burger King</strong></td><td>Gerente de sucursal</td><td class="td-val">$11,236</td><td>Bono puntualidad</td><td>Indeed MX</td><td>2024–2025</td></tr>
+          <tr><td><strong>Burger King</strong></td><td>Jefe de tienda</td><td class="td-val">$8,953</td><td>No especificado</td><td>Infobae MX</td><td><span class="pill pill-warn">⚠ Jun 2024</span></td></tr>
+          <tr><td><strong>KFC</strong></td><td>Gerente de sucursal</td><td class="td-val">$13,423</td><td>No especificado</td><td>Indeed MX</td><td>2024–2025</td></tr>
+          <tr><td><strong>Domino's Pizza</strong></td><td>Gerente / Jefe de tienda</td><td class="td-val">$13,018</td><td>No especificado</td><td>Indeed MX</td><td>2024–2025</td></tr>
+          <tr><td><strong>Fast Food de Mexico †</strong></td><td>Gerente de sucursal</td><td class="td-val">$8,900–$8,950</td><td>No especificado</td><td>Indeed MX</td><td>2024–2025</td></tr>
+          <tr><td class="td-muted">Little Caesars</td><td class="td-muted">—</td><td class="td-muted">Sin datos</td><td class="td-muted">—</td><td class="td-muted">—</td><td><span class="pill pill-danger">✗ Sin datos</span></td></tr>
+          <tr><td class="td-muted">Subway</td><td class="td-muted">—</td><td class="td-muted">Sin datos</td><td class="td-muted">—</td><td class="td-muted">—</td><td><span class="pill pill-danger">✗ Sin datos</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="footnote-list">
+      <p class="fn-red">Sin datos por puesto encontrados para: Little Caesars, Subway. Búsqueda exhaustiva en Indeed MX, Glassdoor, Computrabajo.</p>
+      <p>⚠ Dato jun 2024 = referencial (más de 18 meses). &nbsp;† "Fast Food de Mexico" es un operador/franquiciatario en Indeed, no una cadena nacional reconocida.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="ff-sector" style="background:#FFFAFA;">
+  <div class="section-header fade-up">
+    <span class="section-badge badge-ff">Fast Food · Sector</span>
+    <h2 class="section-title">Fuentes sectoriales y gubernamentales</h2>
+  </div>
+  <div class="table-card fade-up">
+    <div class="table-card-header">
+      <h3>Datos agregados — todo el sector restaurantero</h3>
+      <p>No todos son específicos de fast food. Interpretar con cautela.</p>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Puesto / Categoría</th><th>Sueldo MXN/mes</th><th>Rango</th><th>Fuente</th><th>Alcance</th><th>Fecha</th></tr></thead>
+        <tbody>
+          <tr><td>Gerente de restaurante</td><td class="td-val">$16,890 prom.</td><td>$2k–$35k</td><td>Computrabajo MX</td><td>Nacional, todos formatos</td><td>2026</td></tr>
+          <tr><td>Gerentes de restaurante</td><td class="td-val">$12,743 media</td><td>$7k–$18k</td><td>Computrabajo MX</td><td>Nacional</td><td>2025</td></tr>
+          <tr><td>Subgerente de restaurante</td><td class="td-val">$7,639 prom.</td><td>$7k–$9k</td><td>Computrabajo MX</td><td>Nacional</td><td>2026</td></tr>
+          <tr><td>Dir. y Ger. Rest. y Hoteles</td><td class="td-val">$8,250 prom.</td><td>N/D</td><td>Data México / INEGI</td><td>Nacional, incluye hoteles</td><td>Q1 2025</td></tr>
+          <tr><td>Coordinadores y Jefes de Área</td><td class="td-val">$11,600 prom.</td><td>N/D</td><td>Data México / INEGI</td><td>Nacional</td><td>Q1 2025</td></tr>
+          <tr><td>Ger. general restaurante (est.)</td><td class="td-val">~$21,665</td><td>N/D</td><td>Jooble MX</td><td>Todos formatos</td><td>2025</td></tr>
+          <tr><td><span class="pill pill-danger">✗</span> Gerente restaurante CDMX</td><td class="td-muted">No interpretable</td><td>~$1,142–$7,174/mes*</td><td>Glassdoor MX</td><td>CDMX — muestra baja</td><td>Mar 2026</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="footnote-list">
+      <p>* Glassdoor reporta mediana MXN/año ($13,708–$86,083); convertido a mensual arroja cifras incongruentes con el mercado. Descartado por muestra insuficiente y posible error de unidad.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="ff-rango">
+  <div class="section-header fade-up">
+    <span class="section-badge badge-ff">Fast Food · Rango</span>
+    <h2 class="section-title">Rango salarial visual <span>— MXN/mes</span></h2>
+  </div>
+  <div class="chart-card fade-up">
+    <h3>Salarios por fuente — Gerente Fast Food CDMX</h3>
+    <canvas id="chartFF"></canvas>
+    <div class="chart-legend">
+      <span><span class="dot" style="background:#DC2626"></span>Por marca (Indeed MX)</span>
+      <span><span class="dot" style="background:#1A2B4A"></span>Datos agregados (Computrabajo)</span>
+      <span><span class="dot" style="background:#94A3B8"></span>Oficial INEGI (categoría amplia)</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- ─── CASUAL DINING ─────────────────────────────────────── -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<section class="section" id="cd-overview" style="background:#F0FDF8;">
+  <div class="section-header fade-up">
+    <span class="section-badge badge-cd">🍽️ Casual Dining</span>
+    <h2 class="section-title">Panorama General <span>— Cadenas Nacionales CDMX</span></h2>
+  </div>
+  <p class="section-desc">Gerente general de unidad en casual dining: Alsea (VIPS, Chili's, El Portón), Grupo Toks, Sanborns. Servicio completo, P&L propio, staff de 20–60 personas. Datos: Indeed MX 2024–2025.</p>
+  <div class="cards-4 fade-up">
+    <div class="stat-card"><div class="accent-bar" style="background:var(--grn)"></div><div class="sc-label">Toks (Grupo Gigante)</div><div class="sc-val cd" style="color:var(--grn)">$23,021</div><div class="sc-sub">Gerente general · Indeed MX</div></div>
+    <div class="stat-card"><div class="accent-bar" style="background:var(--grn)"></div><div class="sc-label">Alsea (corporativo)</div><div class="sc-val" style="color:var(--grn)">$21,843</div><div class="sc-sub">Gerente general · Indeed MX</div></div>
+    <div class="stat-card"><div class="accent-bar" style="background:var(--grn)"></div><div class="sc-label">VIPS — oferta real</div><div class="sc-val" style="color:var(--grn)">$21,000</div><div class="sc-sub">Oferta activa publicada · Indeed MX</div></div>
+    <div class="stat-card"><div class="accent-bar" style="background:#64748B)"></div><div class="sc-label">Sanborns</div><div class="sc-val">$12,553</div><div class="sc-sub">Jefe de tienda · Límite inferior</div></div>
+  </div>
+  <div class="cards-3 fade-up">
+    <div class="stat-card min"><div class="accent-bar" style="background:var(--navy2)"></div><div class="sc-label">Mínimo estimado</div><div class="sc-val">$12–14K</div><div class="sc-sub">Jefe de tienda / cadenas medias</div></div>
+    <div class="stat-card avg-cd"><div class="accent-bar" style="background:var(--grn)"></div><div class="sc-label">Promedio (sueldo base)</div><div class="sc-val" style="color:var(--grn)">$18–22K</div><div class="sc-sub">Gerente general Toks / VIPS / Alsea</div></div>
+    <div class="stat-card max"><div class="accent-bar" style="background:var(--navy2)"></div><div class="sc-label">Máximo estimado</div><div class="sc-val">$25–30K</div><div class="sc-sub">Cadenas premium + bono anual</div></div>
+  </div>
+</section>
+
+<section class="section" id="cd-datos">
+  <div class="section-header fade-up">
+    <span class="section-badge badge-cd">Casual Dining</span>
+    <h2 class="section-title">Datos por cadena</h2>
+  </div>
+  <div class="table-card fade-up">
+    <div class="table-card-header">
+      <h3>Salarios reportados — Casual Dining / Nacional</h3>
+      <p>Fuente principal: Indeed MX</p>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Cadena / Grupo</th><th>Puesto</th><th>Sueldo base MXN/mes</th><th>Variables / Prestaciones</th><th>Fuente</th><th>Período</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Toks (Grupo Gigante)</strong></td><td>Gerente general</td><td class="td-val" style="color:var(--grn)">$23,021</td><td>Bono productividad, FA, vales</td><td>Indeed MX</td><td>2024–2025</td></tr>
+          <tr><td><strong>Alsea (corporativo)</strong></td><td>Gerente general</td><td class="td-val" style="color:var(--grn)">$21,843</td><td>Bono, FA, seguro GMM</td><td>Indeed MX</td><td>Ene 2026</td></tr>
+          <tr><td><strong>VIPS (Alsea) — oferta</strong></td><td>Gerente general</td><td class="td-val" style="color:var(--grn)">$21,000</td><td>Prestaciones superiores a la ley</td><td>Indeed MX (oferta real)</td><td>2025</td></tr>
+          <tr><td><strong>VIPS (Alsea) — promedio</strong></td><td>Gerente general</td><td class="td-val">$15,732</td><td>No desglosado</td><td>Indeed MX (autodecl.)</td><td>2024–2025</td></tr>
+          <tr><td><strong>Chili's (Alsea)</strong></td><td>Encargado/a restaurante</td><td class="td-val">$16,721</td><td>No desglosado</td><td>Indeed MX</td><td>2024–2025</td></tr>
+          <tr><td><strong>Sanborns (Carlos Slim)</strong></td><td>Jefe de tienda</td><td class="td-val">$12,553</td><td>No desglosado</td><td>Indeed MX</td><td>2024–2025</td></tr>
+          <tr><td class="td-muted">El Portón / P.F. Chang's / Cheesecake Factory</td><td class="td-muted">—</td><td class="td-muted">Sin datos</td><td class="td-muted">—</td><td class="td-muted">—</td><td><span class="pill pill-danger">✗ Sin datos</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="footnote-list">
+      <p class="fn-red">Sin datos por puesto para: El Portón, P.F. Chang's, Cheesecake Factory, Andatti.</p>
+      <p>VIPS muestra brecha entre oferta activa ($21,000) y promedio autodeclarado ($15,732). El componente variable probablemente no se reporta correctamente en encuestas de empleados.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="cd-sector" style="background:#F0FDF8;">
+  <div class="section-header fade-up">
+    <span class="section-badge badge-cd">Casual Dining · Sector</span>
+    <h2 class="section-title">Fuentes sectoriales y gubernamentales</h2>
+  </div>
+  <div class="table-card fade-up">
+    <div class="table-card-header">
+      <h3>Datos agregados — sector restaurantero amplio</h3>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Puesto / Categoría</th><th>Sueldo MXN/mes</th><th>Rango</th><th>Fuente</th><th>Alcance / Nota</th><th>Fecha</th></tr></thead>
+        <tbody>
+          <tr><td>Gerente general restaurante (est.)</td><td class="td-val">~$21,665</td><td>N/D</td><td>Talent.com / Jooble</td><td>Nacional, todos formatos</td><td>2025</td></tr>
+          <tr><td>Gerente de restaurante</td><td class="td-val">$16,890 prom.</td><td>$2k–$35k</td><td>Computrabajo MX</td><td>Nacional — muy amplio</td><td>2026</td></tr>
+          <tr><td>Gerentes de restaurante</td><td class="td-val">$12,743 media</td><td>$7k–$18k</td><td>Computrabajo MX</td><td>Nacional</td><td>2025</td></tr>
+          <tr><td>Dir. y Ger. Rest. y Hoteles</td><td class="td-val">$8,250 prom.</td><td>N/D</td><td>Data México / INEGI</td><td>Nacional, incluye hoteles e informalidad</td><td>Q1 2025</td></tr>
+          <tr><td>Alsea (promedio toda empresa)</td><td class="td-val">~$8,000</td><td>$4,658–$17,166</td><td>Indeed MX / Talent.com</td><td>Todos los puestos, no solo gerentes</td><td>2025–2026</td></tr>
+          <tr><td><span class="pill pill-danger">✗</span> Gerente restaurante CDMX</td><td class="td-muted">No interpretable</td><td>~$39k–$98k/mes*</td><td>Glassdoor MX (CDMX)</td><td>Muestra baja — descartado</td><td>Mar 2026</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="footnote-list">
+      <p>* Glassdoor CDMX reporta "pago total estimado $68,000/mes" — cifras con muestra insuficiente y confusión entre pago total y base. Descartado del análisis.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="cd-rango">
+  <div class="section-header fade-up">
+    <span class="section-badge badge-cd">Casual Dining · Rango</span>
+    <h2 class="section-title">Rango salarial visual <span>— MXN/mes</span></h2>
+  </div>
+  <div class="chart-card fade-up">
+    <h3>Salarios por cadena y fuente — Gerente Casual Dining CDMX</h3>
+    <canvas id="chartCD"></canvas>
+    <div class="chart-legend">
+      <span><span class="dot" style="background:#0D7A5F"></span>Por cadena (Indeed MX)</span>
+      <span><span class="dot" style="background:#64748B"></span>Datos sectoriales agregados</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- ─── COMPARATIVA ───────────────────────────────────────── -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<section class="section" id="comparativa" style="background:linear-gradient(180deg,#F1F5F9 0%,#EFF6FF 100%);">
+  <div class="section-header fade-up">
+    <span class="section-badge badge-cmp">⚖️ Comparativa</span>
+    <h2 class="section-title">Fast Food vs Casual Dining <span>— lado a lado</span></h2>
+  </div>
+
+  <div class="cmp-hero fade-up">
+    <div class="cmp-side ff">
+      <span class="brand-tag">Fast Food</span>
+      <h3>Promedio sueldo base</h3>
+      <div class="big">$12,200 <span style="font-size:1rem;font-weight:400;color:rgba(255,255,255,.5)">/mes</span></div>
+      <div class="cmp-row"><span class="ck">McDonald's</span><span class="cv">$11,247</span></div>
+      <div class="cmp-row"><span class="ck">Burger King</span><span class="cv">$11,236</span></div>
+      <div class="cmp-row"><span class="ck">KFC</span><span class="cv">$13,423</span></div>
+      <div class="cmp-row"><span class="ck">Domino's</span><span class="cv">$13,018</span></div>
+      <div class="cmp-row"><span class="ck">Rango</span><span class="cv">$9k – $20k</span></div>
+      <div class="cmp-row"><span class="ck">Bono anual est.</span><span class="cv">$5k – $15k</span></div>
+    </div>
+
+    <div class="cmp-mid">
+      <div class="gap-badge">
+        <span class="pct">+55%</span>
+        <span class="lbl">brecha</span>
+      </div>
+      <p>al subir de<br>segmento</p>
+    </div>
+
+    <div class="cmp-side cd">
+      <span class="brand-tag">Casual Dining</span>
+      <h3>Promedio sueldo base</h3>
+      <div class="big">$18,900 <span style="font-size:1rem;font-weight:400;color:rgba(255,255,255,.5)">/mes</span></div>
+      <div class="cmp-row"><span class="ck">Toks GG</span><span class="cv">$23,021</span></div>
+      <div class="cmp-row"><span class="ck">Alsea GG</span><span class="cv">$21,843</span></div>
+      <div class="cmp-row"><span class="ck">VIPS (oferta)</span><span class="cv">$21,000</span></div>
+      <div class="cmp-row"><span class="ck">Chili's Enc.</span><span class="cv">$16,721</span></div>
+      <div class="cmp-row"><span class="ck">Rango</span><span class="cv">$12k – $30k</span></div>
+      <div class="cmp-row"><span class="ck">Bono anual est.</span><span class="cv">$20k – $40k</span></div>
+    </div>
+  </div>
+
+  <div class="chart-card fade-up" style="margin-bottom:1.5rem;">
+    <h3>Comparativa directa — ambos segmentos por empresa</h3>
+    <canvas id="chartComp"></canvas>
+    <div class="chart-legend">
+      <span><span class="dot" style="background:#DC2626"></span>Fast Food</span>
+      <span><span class="dot" style="background:#0D7A5F"></span>Casual Dining</span>
+    </div>
+  </div>
+
+  <div class="diff-table fade-up">
+    <div class="dt-header">
+      <span>Dimensión</span>
+      <span style="color:#FCA5A5;">🍔 Fast Food</span>
+      <span style="color:#6EE7B7;">🍽️ Casual Dining</span>
+    </div>
+    <div class="dt-row"><span class="dt-dim">Sueldo base típico</span><span class="dt-ff">$11,000–$13,500</span><span class="dt-cd">$18,000–$22,000</span></div>
+    <div class="dt-row"><span class="dt-dim">Responsabilidad P&L</span><span class="dt-ff">Limitada o nula</span><span class="dt-cd">Alta (ventas, costos, personal)</span></div>
+    <div class="dt-row"><span class="dt-dim">Staff a cargo</span><span class="dt-ff">10–25 personas</span><span class="dt-cd">20–60 personas, servicio de mesa</span></div>
+    <div class="dt-row"><span class="dt-dim">Variables / bono</span><span class="dt-ff">PTU, vales despensa</span><span class="dt-cd">Bono anual, FA, seguro GMM</span></div>
+    <div class="dt-row"><span class="dt-dim">Bono anual estimado</span><span class="dt-ff">$5,000–$15,000 /año</span><span class="dt-cd">$20,000–$40,000 /año</span></div>
+    <div class="dt-row"><span class="dt-dim">Complejidad operativa</span><span class="dt-ff">Manual estandarizado</span><span class="dt-cd">Alta — menú, sommelier, servicio</span></div>
+    <div class="dt-row"><span class="dt-dim">Perfil requerido</span><span class="dt-ff">1–3 años exp. en cadena</span><span class="dt-cd">3–8 años, gestión P&L demostrable</span></div>
+  </div>
+</section>
+
+<!-- ─── CONCLUSIONES ─────────────────────────────────────────── -->
+<section class="section" id="conclusiones">
+  <div class="section-header fade-up">
+    <span class="section-badge badge-meta">Conclusiones</span>
+    <h2 class="section-title">Lo que dicen los datos</h2>
+  </div>
+  <div class="fade-up">
+    <div class="concl-item"><div class="concl-num ff">1</div><div class="concl-body"><h4>Fast Food converge en $11,000–$13,500</h4><p>Las 4 principales cadenas (McDonald's, BK, KFC, Domino's) agrupan sus sueldos base en este corredor. La consistencia entre fuentes da confianza media-alta a este rango.</p></div></div>
+    <div class="concl-item"><div class="concl-num cd">2</div><div class="concl-body"><h4>Casual Dining converge en $18,000–$23,000</h4><p>Toks ($23,021), Alsea ($21,843) y VIPS oferta real ($21,000) son consistentes entre sí. Es el segmento mejor documentado del sector en fuentes públicas.</p></div></div>
+    <div class="concl-item"><div class="concl-num ff">3</div><div class="concl-body"><h4>La brecha de +55% está justificada por complejidad</h4><p>El diferencial no es arbitrario: casual dining implica P&L real, staff 2–3× mayor, servicio de mesa, y decisiones operativas diarias que fast food no requiere del gerente.</p></div></div>
+    <div class="concl-item"><div class="concl-num cd">4</div><div class="concl-body"><h4>Los componentes variables amplifican la brecha real</h4><p>En fast food: PTU + vales = ~$15–25% sobre base. En casual dining: bono anual + fondo ahorro + seguro GMM puede sumar 20–35% adicional. La brecha de paquete total podría ser mayor a 55%.</p></div></div>
+    <div class="concl-item"><div class="concl-num ff">5</div><div class="concl-body"><h4>Computrabajo y Glassdoor sobreestiman en categorías amplias</h4><p>Computrabajo reporta $16,890 para "gerente de restaurante" nacional — útil como techo, no como referencia de fast food operativo. Glassdoor CDMX fue descartado por datos incongruentes.</p></div></div>
+    <div class="concl-item"><div class="concl-num cd">6</div><div class="concl-body"><h4>CDMX está por encima del promedio nacional</h4><p>La CDMX concentra 12,100 gerentes del sector (mayor del país). Se estima un sobreprecio del 10–20% respecto al interior de la república por costo de vida y competencia por talento.</p></div></div>
+  </div>
+</section>
+
+<!-- ─── CALIDAD DE DATOS ──────────────────────────────────────── -->
+<section class="section" id="calidad" style="background:var(--bg);">
+  <div class="section-header fade-up">
+    <span class="section-badge badge-meta">Evaluación</span>
+    <h2 class="section-title">Calidad y disponibilidad de datos <span>— evaluación honesta</span></h2>
+  </div>
+  <div class="quality-grid fade-up">
+    <div class="qc ok"><span class="qc-icon">✅</span><div><strong>Indeed MX por empresa: CONFIABLE</strong><p>Los datos de Toks, Alsea, KFC, McDonald's y Domino's son autodeclarados con muestras de 36 meses. Tres fuentes converging en casual dining ($18k–$23k) aumenta confianza.</p></div></div>
+    <div class="qc no"><span class="qc-icon">❌</span><div><strong>Reportes de firmas: NO DISPONIBLES</strong><p>No se encontraron reportes públicos de Mercer, Aon, Willis Towers Watson ni KPMG para fast food o casual dining en México. Solo accesibles bajo suscripción.</p></div></div>
+    <div class="qc warn"><span class="qc-icon">⚠️</span><div><strong>Computrabajo: AMPLIO — útil como referencia de sector, no de nicho</strong><p>Rango $2,000–$35,000 nacional para "gerente de restaurante" es demasiado amplio para negociación. La media ($12,743) es más útil que el promedio ($16,890).</p></div></div>
+    <div class="qc no"><span class="qc-icon">❌</span><div><strong>Glassdoor MX: DESCARTADO</strong><p>Datos incongruentes en ambos segmentos (fast food y CDMX casual dining). Muestra insuficiente, posible error de unidad (¿año vs mes?). No se usó en ningún rango final.</p></div></div>
+    <div class="qc warn"><span class="qc-icon">⚠️</span><div><strong>Especificidad CDMX: LIMITADA</strong><p>La mayoría de fuentes reportan México nacional. Indeed tiene filtro por ciudad pero la muestra por sucursal específica en CDMX es pequeña. Se estima +10–20% sobre promedio nacional.</p></div></div>
+    <div class="qc warn"><span class="qc-icon">⚠️</span><div><strong>Variables y bono: CASI SIN DATOS</strong><p>Muy pocas fuentes desglosan sueldo base vs bono, PTU, fondo ahorro y vales. El paquete total rara vez se reporta correctamente. La brecha real podría ser mayor a 55%.</p></div></div>
+    <div class="qc no"><span class="qc-icon">❌</span><div><strong>Little Caesars, Subway, El Portón, PF Chang's: SIN DATOS</strong><p>Búsqueda exhaustiva no arrojó datos por puesto de gerente para estas marcas. Gap importante para el análisis de fast food y casual dining premium.</p></div></div>
+    <div class="qc ok"><span class="qc-icon">✅</span><div><strong>INEGI / Data México: METODOLOGÍA SÓLIDA</strong><p>La fuente más robusta metodológicamente, pero la categoría "Directores y Gerentes de Rest. y Hoteles" es muy amplia e incluye informalidad. No es específica de fast food ni CDMX.</p></div></div>
+  </div>
+  <div style="background:var(--navy2);color:rgba(255,255,255,.75);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-top:1.5rem;font-size:.85rem;line-height:1.6;" class="fade-up">
+    <strong style="color:#fff;display:block;margin-bottom:.4rem;">Recomendación final para benchmarking formal:</strong>
+    Los datos públicos permiten establecer rangos orientativos con confianza media. Para negociación, diseño de esquemas de compensación o decisiones de contratación ejecutiva, se recomienda contratar una encuesta salarial de Mercer o AON enfocada en el sector restaurantero México.
+  </div>
+</section>
+
+<!-- ─── FOOTER ────────────────────────────────────────────────── -->
+<div class="footer-banner">
+  <span><strong>Salarios · Sector Restaurantero CDMX</strong> &nbsp;|&nbsp; Análisis comparativo Fast Food vs Casual Dining · 2025–2026</span>
+  <span>Fuentes: Indeed MX · Computrabajo · Data México (INEGI) · Talent.com · Infobae &nbsp;|&nbsp; Abril 2026</span>
+</div>
+
+</main>
+
+<script>
+// ─── MOBILE MENU ─────────────────────────────────────────────
+function toggleMenu() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  const sb = document.getElementById('sidebar');
+  if (sb.classList.contains('open') && !sb.contains(e.target) && e.target.id !== 'menu-btn') {
+    sb.classList.remove('open');
+  }
+});
+
+// ─── ACTIVE NAV ON SCROLL ────────────────────────────────────
+const sections = document.querySelectorAll('section[id], div[id]');
+const navLinks  = document.querySelectorAll('.nav-link');
+const observer  = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      navLinks.forEach(a => {
+        a.classList.remove('active');
+        if (a.getAttribute('href') === '#' + id) a.classList.add('active');
+      });
+    }
+  });
+}, { rootMargin: '-40% 0px -55% 0px' });
+sections.forEach(s => observer.observe(s));
+
+// ─── FADE-UP ON SCROLL ───────────────────────────────────────
+const fuObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); fuObs.unobserve(e.target); } });
+}, { threshold: 0.08 });
+document.querySelectorAll('.fade-up').forEach(el => fuObs.observe(el));
+
+// ─── CHARTS ──────────────────────────────────────────────────
+const gridColor = '#E2E8F0';
+const baseOpts = {
+  responsive: true,
+  plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' $' + c.raw.toLocaleString('es-MX') + ' /mes' } } },
+  scales: {
+    y: { beginAtZero: true, grid: { color: gridColor }, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k', color: '#64748B', font: { size: 11 } } },
+    x: { grid: { display: false }, ticks: { color: '#64748B', font: { size: 10 } } }
+  }
+};
+
+// Chart FF
+new Chart(document.getElementById('chartFF'), {
+  type: 'bar',
+  data: {
+    labels: ["McDonald's", 'Burger King', 'KFC', "Domino's", 'Computrabajo\nmedia', 'Computrabajo\nprom.', 'INEGI\nDir./Ger.'],
+    datasets: [{ data: [11247,11236,13423,13018,12743,16890,8250],
+      backgroundColor: ['#DC2626','#DC2626','#DC2626','#DC2626','#1A2B4A','#1A2B4A','#94A3B8'],
+      borderRadius: 4, borderSkipped: false }]
+  },
+  options: { ...baseOpts, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, max: 20000 } } }
+});
+
+// Chart CD
+new Chart(document.getElementById('chartCD'), {
+  type: 'bar',
+  data: {
+    labels: ['Sanborns', 'VIPS\npromedio', "Chili's\nEnc.", 'VIPS\noferta', 'Alsea GG', 'Toks GG', 'Talent.com\nest.', 'Computrabajo\nprom.'],
+    datasets: [{ data: [12553,15732,16721,21000,21843,23021,21665,16890],
+      backgroundColor: ['#64748B','#0D7A5F','#0D7A5F','#0D7A5F','#0D7A5F','#0D7A5F','#94A3B8','#64748B'],
+      borderRadius: 4, borderSkipped: false }]
+  },
+  options: { ...baseOpts, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, max: 28000 } } }
+});
+
+// Chart COMP
+new Chart(document.getElementById('chartComp'), {
+  type: 'bar',
+  data: {
+    labels: ["McDonald's", 'Burger King', 'KFC', "Domino's", 'Sanborns', 'VIPS prom.', 'VIPS oferta', "Chili's Enc.", 'Alsea GG', 'Toks GG'],
+    datasets: [
+      { label: 'Fast Food', data: [11247,11236,13423,13018,0,0,0,0,0,0], backgroundColor: '#DC2626', borderRadius: 4, borderSkipped: false },
+      { label: 'Casual Dining', data: [0,0,0,0,12553,15732,21000,16721,21843,23021], backgroundColor: '#0D7A5F', borderRadius: 4, borderSkipped: false }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { size: 11 }, color: '#475569' } },
+      tooltip: { callbacks: { label: c => c.dataset.label + ': $' + c.raw.toLocaleString('es-MX') + ' /mes' } }
+    },
+    scales: {
+      y: { beginAtZero: true, max: 26000, grid: { color: gridColor }, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k', color: '#64748B', font: { size: 11 } } },
+      x: { grid: { display: false }, ticks: { color: '#64748B', font: { size: 10 } } }
+    }
+  }
+});
+</script>
+</body>
+</html>
